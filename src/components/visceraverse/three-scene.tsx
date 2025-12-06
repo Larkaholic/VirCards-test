@@ -35,37 +35,42 @@ export default function ThreeScene() {
     directionalLight.position.set(5, 10, 7.5);
     scene.add(directionalLight);
     
-    // Intestine-like objects
-    const createIntestineSegment = (path: THREE.Vector3[], color: THREE.ColorRepresentation, name: string) => {
-        const curve = new THREE.CatmullRomCurve3(path, true);
-        const geometry = new THREE.TubeGeometry(curve, 100, 1, 8, false);
+    // Autopsy System Models
+    const torsoMaterial = new THREE.MeshStandardMaterial({ color: 0xead1b8, transparent: true, opacity: 0.2 });
+    const torsoShape = new THREE.Shape();
+    torsoShape.moveTo(-5, -8);
+    torsoShape.lineTo(5, -8);
+    torsoShape.lineTo(4, 8);
+    torsoShape.lineTo(-4, 8);
+    torsoShape.closePath();
+    const extrudeSettings = { depth: 4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+    const torsoGeometry = new THREE.ExtrudeGeometry(torsoShape, extrudeSettings);
+    const torso = new THREE.Mesh(torsoGeometry, torsoMaterial);
+    torso.position.z = -2;
+    scene.add(torso);
+
+    const createOrgan = (geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, name: string, position: THREE.Vector3) => {
         const material = new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.6 });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.userData = { name, originalColor: new THREE.Color(color) };
+        mesh.position.copy(position);
         return mesh;
     };
     
-    const segment1 = createIntestineSegment([
-        new THREE.Vector3(-5, 0, 0), new THREE.Vector3(-3, 4, 2), new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(3, -4, -2), new THREE.Vector3(5, 0, 0),
-    ], '#C39BE2', 'Small Intestine');
-    scene.add(segment1);
+    const heart = createOrgan(new THREE.SphereGeometry(1.5, 32, 16), 0x8c2c2c, 'Heart', new THREE.Vector3(0, 3, 0));
+    const leftLung = createOrgan(new THREE.SphereGeometry(2, 32, 16), 0xc78080, 'Left Lung', new THREE.Vector3(-2.5, 3, -1));
+    leftLung.scale.set(1, 1.2, 1);
+    const rightLung = createOrgan(new THREE.SphereGeometry(2, 32, 16), 0xc78080, 'Right Lung', new THREE.Vector3(2.5, 3, -1));
+    rightLung.scale.set(1, 1.2, 1);
+    const liver = createOrgan(new THREE.CapsuleGeometry(2, 2, 4, 8), 0x6b2d2d, 'Liver', new THREE.Vector3(2, -1, 0));
+    liver.scale.set(1.5, 1, 1);
+    liver.rotation.z = Math.PI / 4;
+    const stomach = createOrgan(new THREE.TorusGeometry(1.5, 0.7, 16, 100), 0xbda28e, 'Stomach', new THREE.Vector3(-2.5, -0.5, 0));
+    const intestines = createOrgan(new THREE.TorusKnotGeometry(2, 0.3, 100, 16), 0xce7a7a, 'Intestines', new THREE.Vector3(0, -4, 0));
 
-    const segment2 = createIntestineSegment([
-        new THREE.Vector3(-8, -5, -3), new THREE.Vector3(-4, -2, 0), new THREE.Vector3(0, -5, 3),
-        new THREE.Vector3(4, -2, 0), new THREE.Vector3(8, -5, -3),
-    ], '#8F6FAD', 'Large Intestine');
-    segment2.position.y = -2;
-    scene.add(segment2);
-    
-    const segment3 = createIntestineSegment([
-       new THREE.Vector3(0, 6, 0), new THREE.Vector3(2, 8, 2), new THREE.Vector3(0, 10, 0), new THREE.Vector3(-2, 8, -2),
-    ], '#5A3A8A', 'Stomach');
-    segment3.scale.set(0.7,0.7,0.7);
-    segment3.position.y = 3;
-    scene.add(segment3);
 
-    const interactiveObjects = [segment1, segment2, segment3];
+    const interactiveObjects = [heart, leftLung, rightLung, liver, stomach, intestines];
+    interactiveObjects.forEach(obj => scene.add(obj));
 
     // Interaction
     const raycaster = new THREE.Raycaster();
@@ -108,13 +113,14 @@ export default function ThreeScene() {
             draggedObject = intersects[0].object;
             recordInteraction(draggedObject.userData.name);
             // Bring to front
-            draggedObject.position.z += 1;
+            draggedObject.position.z = 5;
         }
     };
     
     const onPointerUp = () => {
         if (draggedObject) {
-             draggedObject.position.z -= 1;
+             const originalZ = interactiveObjects.find(o => o.id === draggedObject?.id)?.position.z ?? 0;
+             draggedObject.position.z = originalZ;
         }
         draggedObject = null;
     };
@@ -133,7 +139,7 @@ export default function ThreeScene() {
     if (scenario) {
       const injuryText = scenario.injuriesSustained.toLowerCase();
       interactiveObjects.forEach(obj => {
-        if(injuryText.includes(obj.userData.name.toLowerCase())) {
+        if(injuryText.includes(obj.userData.name.toLowerCase().replace(' ', ''))) {
           (obj as THREE.Mesh).material.emissive.set('yellow');
         }
       });
@@ -169,7 +175,9 @@ export default function ThreeScene() {
     // Cleanup
     return () => {
         resizeObserver.disconnect();
-        currentMount.removeChild(renderer.domElement);
+        if (currentMount && renderer.domElement) {
+            currentMount.removeChild(renderer.domElement);
+        }
         renderer.domElement.removeEventListener('pointermove', onPointerMove);
         renderer.domElement.removeEventListener('pointerdown', onPointerDown);
         renderer.domElement.removeEventListener('pointerup', onPointerUp);
