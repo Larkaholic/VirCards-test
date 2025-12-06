@@ -1,7 +1,7 @@
 import { AutopsyProvider } from '@/components/visceraverse/autopsy-provider';
 import AutopsyControls from '@/components/visceraverse/autopsy-controls';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import VisceraverseViewer from '@/components/visceraverse/visceraverse-viewer';
 import { PanelLeft } from 'lucide-react';
 import { Logo } from '@/components/icons/logo';
@@ -20,10 +20,10 @@ export default function Home() {
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-[350px] sm:w-[400px]">
               <div className="flex h-full flex-col">
-                <div className="flex items-center gap-3 p-4 border-b">
+                <SheetHeader className="flex-row items-center gap-3 p-4 border-b">
                   <Logo />
-                  <h1 className="text-xl font-headline font-bold">VisceraVerse</h1>
-                </div>
+                  <SheetTitle className="text-xl font-headline font-bold">VisceraVerse</SheetTitle>
+                </SheetHeader>
                 <AutopsyControls />
               </div>
             </SheetContent>
