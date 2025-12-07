@@ -3,6 +3,8 @@
 import { create } from 'zustand';
 import type { AutopsyScenario, OrganInteraction, DataTag, Evidence, Injury } from '@/lib/types';
 
+type Tool = 'magnifying-glass' | null;
+
 type AutopsyState = {
   scenario: AutopsyScenario | null;
   isLoading: boolean;
@@ -10,6 +12,7 @@ type AutopsyState = {
   tags: DataTag[];
   discoveredEvidence: string[];
   injuries: Injury[];
+  activeTool: Tool;
 };
 
 type AutopsyActions = {
@@ -19,6 +22,7 @@ type AutopsyActions = {
   addTag: (tag: Omit<DataTag, 'id'>) => void;
   removeTag: (id: string) => void;
   discoverEvidence: (evidenceId: string) => void;
+  setActiveTool: (tool: Tool) => void;
   clearState: () => void;
 };
 
@@ -30,12 +34,14 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
   tags: [],
   discoveredEvidence: [],
   injuries: [],
+  activeTool: null,
 
   // Actions
   setScenario: (scenario) => {
     set({ 
       scenario,
       injuries: scenario?.injuries || [],
+      evidence: scenario?.evidence || [],
     });
   },
   setIsLoading: (isLoading) => set({ isLoading }),
@@ -64,6 +70,7 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
         set(state => ({ discoveredEvidence: [...state.discoveredEvidence, evidenceId] }));
     }
   },
+  setActiveTool: (tool) => set({ activeTool: tool }),
   clearState: () => {
     set({
       scenario: null,
@@ -71,6 +78,7 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
       tags: [],
       discoveredEvidence: [],
       injuries: [],
+      activeTool: null,
     });
   },
 }));

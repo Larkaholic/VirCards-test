@@ -7,10 +7,9 @@ import { X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
 
-
 export default function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null);
-  const { recordInteraction, tags, addTag, removeTag, scenario, injuries } = useAutopsyStore();
+  const { recordInteraction, tags, addTag, removeTag, scenario, injuries, activeTool, discoverEvidence } = useAutopsyStore();
   const [rendererSize, setRendererSize] = useState({ width: 0, height: 0 });
   const [mainCamera, setMainCamera] = useState<THREE.PerspectiveCamera | null>(null);
 
@@ -53,15 +52,15 @@ export default function ThreeScene() {
     torso.position.z = -2;
     scene.add(torso);
 
-    const createOrgan = (geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, name: string, position: THREE.Vector3) => {
+    const createOrgan = (geometry: THREE.BufferGeometry, color: THREE.ColorRepresentation, name: string, position: THREE.Vector3, evidenceId?: string) => {
         const material = new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.6 });
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.userData = { name, originalColor: new THREE.Color(color) };
+        mesh.userData = { name, originalColor: new THREE.Color(color), evidenceId };
         mesh.position.copy(position);
         return mesh;
     };
     
-    const heart = createOrgan(new THREE.SphereGeometry(1.5, 32, 16), 0x8c2c2c, 'Heart', new THREE.Vector3(0, 3, 0));
+    const heart = createOrgan(new THREE.SphereGeometry(1.5, 32, 16), 0x8c2c2c, 'Heart', new THREE.Vector3(0, 3, 0), 'evidence-heart');
     const leftLung = createOrgan(new THREE.SphereGeometry(2, 32, 16), 0xc78080, 'Left Lung', new THREE.Vector3(-2.5, 3, -1));
     leftLung.scale.set(1, 1.2, 1);
     const rightLung = createOrgan(new THREE.SphereGeometry(2, 32, 16), 0xc78080, 'Right Lung', new THREE.Vector3(2.5, 3, -1));
@@ -71,7 +70,6 @@ export default function ThreeScene() {
     liver.rotation.z = Math.PI / 4;
     const stomach = createOrgan(new THREE.TorusGeometry(1.5, 0.7, 16, 100), 0xbda28e, 'Stomach', new THREE.Vector3(-2.5, -0.5, 0));
     const intestines = createOrgan(new THREE.TorusKnotGeometry(2, 0.3, 100, 16), 0xce7a7a, 'Intestines', new THREE.Vector3(0, -4, 0));
-
 
     const interactiveObjects = [heart, leftLung, rightLung, liver, stomach, intestines];
     interactiveObjects.forEach(obj => scene.add(obj));
@@ -101,7 +99,6 @@ export default function ThreeScene() {
         }
     });
 
-
     // Interaction
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -113,7 +110,7 @@ export default function ThreeScene() {
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         
-        if (draggedObject) {
+        if (draggedObject && activeTool === null) {
             raycaster.setFromCamera(pointer, camera);
             const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -draggedObject.position.z);
             const intersectPoint = new THREE.Vector3();
@@ -128,11 +125,13 @@ export default function ThreeScene() {
         if (highlightedObject) {
             (highlightedObject as THREE.Mesh).material.emissive.setHex(0x000000);
             highlightedObject = null;
+            document.body.style.cursor = 'default';
         }
 
         if (intersects.length > 0) {
             highlightedObject = intersects[0].object;
             ((highlightedObject as THREE.Mesh).material as THREE.MeshStandardMaterial).emissive.setHex(0x555555);
+            document.body.style.cursor = 'pointer';
         }
     };
 
@@ -140,10 +139,18 @@ export default function ThreeScene() {
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(interactiveObjects);
         if (intersects.length > 0) {
-            draggedObject = intersects[0].object;
-            recordInteraction(draggedObject.userData.name);
-            // Bring to front
-            draggedObject.position.z = 5;
+            const clickedObject = intersects[0].object;
+            recordInteraction(clickedObject.userData.name);
+
+            if (activeTool === 'magnifying-glass') {
+                if (clickedObject.userData.evidenceId) {
+                    discoverEvidence(clickedObject.userData.evidenceId);
+                }
+            } else {
+                 draggedObject = clickedObject;
+                 // Bring to front
+                 draggedObject.position.z = 5;
+            }
         }
     };
     
@@ -156,6 +163,7 @@ export default function ThreeScene() {
     };
     
     const onDoubleClick = (event: MouseEvent) => {
+        if (activeTool) return;
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(interactiveObjects);
         if (intersects.length > 0) {
@@ -210,6 +218,7 @@ export default function ThreeScene() {
             }
           }
         });
+        document.body.style.cursor = 'default';
     };
   }, [scenario, injuries]); // Re-run effect if scenario or injuries change
 
@@ -223,7 +232,7 @@ export default function ThreeScene() {
   }
 
   return (
-    <div className="w-full h-full relative" ref={mountRef}>
+    <div className={cn("w-full h-full relative", activeTool && "cursor-crosshair")} ref={mountRef}>
        {mainCamera && tags.map(tag => {
            const {x, y} = getTagPosition(tag.position);
            return (
@@ -234,7 +243,7 @@ export default function ThreeScene() {
            )
        })}
        <div className="absolute bottom-4 left-4 bg-card/50 backdrop-blur-sm p-2 rounded-lg text-xs text-muted-foreground">
-          <p>Drag to move organs. Double-click to add a tag.</p>
+          <p>Drag to move organs. Double-click to add a tag. Use tools for analysis.</p>
        </div>
     </div>
   );
