@@ -1,10 +1,11 @@
 'use server';
 
+import { config } from 'dotenv';
+config();
+
 import { generateAutopsyScenario, type GenerateAutopsyScenarioInput } from '@/ai/flows/generate-autopsy-scenario';
 import type { AutopsyScenario } from '@/lib/types';
-import { config } from 'dotenv';
 
-config();
 
 type ActionResult = {
   success: boolean;
