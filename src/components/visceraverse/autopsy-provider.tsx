@@ -41,7 +41,7 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
     set({ 
       scenario,
       injuries: scenario?.injuries || [],
-      evidence: scenario?.evidence || [],
+      discoveredEvidence: [],
     });
   },
   setIsLoading: (isLoading) => set({ isLoading }),
