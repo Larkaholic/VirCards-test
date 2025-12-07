@@ -2,6 +2,9 @@
 
 import { generateAutopsyScenario, type GenerateAutopsyScenarioInput } from '@/ai/flows/generate-autopsy-scenario';
 import type { AutopsyScenario } from '@/lib/types';
+import { config } from 'dotenv';
+
+config();
 
 type ActionResult = {
   success: boolean;
@@ -15,6 +18,7 @@ export async function createAutopsyScenario(input: GenerateAutopsyScenarioInput)
     return { success: true, data: result };
   } catch (error) {
     console.error('Error generating autopsy scenario:', error);
-    return { success: false, error: 'Failed to generate a new scenario. Please try again.' };
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { success: false, error: `Failed to generate a new scenario. Please try again. Details: ${errorMessage}` };
   }
 }
