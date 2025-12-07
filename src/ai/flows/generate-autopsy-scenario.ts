@@ -19,35 +19,67 @@ const GenerateAutopsyScenarioInputSchema = z.object({
       'Optional user input that provides context for the autopsy scenario. Leave blank for a random scenario'
     ),
 });
-export type GenerateAutopsyScenarioInput = z.infer<typeof GenerateAutopsyScenarioInputSchema>;
+export type GenerateAutopsyScenarioInput = z.infer<
+  typeof GenerateAutopsyScenarioInputSchema
+>;
 
 const InjurySchema = z.object({
-  type: z.enum(['stabbing', 'gunshot', 'poisoning', 'blunt-force-trauma', 'unknown']),
-  location: z.string().describe('e.g., \'Heart\', \'Left Lung\''),
-  position: z.array(z.number()).length(3).describe('Position of the injury as [x, y, z] coordinates.'),
-  orientation: z.array(z.number()).length(3).describe('Orientation of the injury as [x, y, z] Euler angles.'),
-  size: z.array(z.number()).length(3).describe('Size of the decal for the injury as [width, height, depth].')
+  type: z
+    .enum(['stabbing', 'gunshot', 'poisoning', 'blunt-force-trauma', 'unknown'])
+    .describe('The type of injury.'),
+  location: z.string().describe("e.g., 'Heart', 'Left Lung'"),
+  position: z
+    .array(z.number())
+    .length(3)
+    .describe('Position of the injury as [x, y, z] coordinates.'),
+  orientation: z
+    .array(z.number())
+    .length(3)
+    .describe('Orientation of the injury as [x, y, z] Euler angles.'),
+  size: z
+    .array(z.number())
+    .length(3)
+    .describe('Size of the decal for the injury as [width, height, depth].'),
 });
 
 const EvidenceSchema = z.object({
-    id: z.string().describe('A unique ID for the evidence, e.g., evidence-heart'),
-    description: z.string().describe('A detailed description of the evidence found.'),
-    type: z.enum(['visual', 'toxicology', 'document']).describe('The type of evidence.'),
-    discovered: z.boolean().describe('Whether the evidence has been discovered by the player.'),
-    data: z.object({
-        title: z.string().describe('A short title for the evidence, e.g., "Stab Wound Details"')
-    }).passthrough().describe('Any additional data related to the evidence.')
+  id: z.string().describe('A unique ID for the evidence, e.g., evidence-heart'),
+  description: z
+    .string()
+    .describe('A detailed description of the evidence found.'),
+  type: z
+    .enum(['visual', 'toxicology', 'document'])
+    .describe('The type of evidence.'),
+  discovered: z
+    .boolean()
+    .describe('Whether the evidence has been discovered by the player.'),
+  data: z
+    .object({
+      title: z
+        .string()
+        .describe('A short title for the evidence, e.g., "Stab Wound Details"'),
+    })
+    .passthrough()
+    .describe('Any additional data related to the evidence.'),
 });
 
 const GenerateAutopsyScenarioOutputSchema = z.object({
   scenario: z.string().describe('A fictional autopsy scenario.'),
   causeOfDeath: z.string().describe('The determined cause of death.'),
   timeOfDeath: z.string().describe('The estimated time of death.'),
-  injuriesSustained: z.string().describe('A description of injuries sustained by the deceased.'),
-  injuries: z.array(InjurySchema).describe('An array of injury objects with details for 3D visualization.'),
-  evidence: z.array(EvidenceSchema).describe('An array of evidence that can be discovered.')
+  injuriesSustained: z
+    .string()
+    .describe('A description of injuries sustained by the deceased.'),
+  injuries: z
+    .array(InjurySchema)
+    .describe('An array of injury objects with details for 3D visualization.'),
+  evidence: z
+    .array(EvidenceSchema)
+    .describe('An array of evidence that can be discovered.'),
 });
-export type GenerateAutopsyScenarioOutput = z.infer<typeof GenerateAutopsyScenarioOutputSchema>;
+export type GenerateAutopsyScenarioOutput = z.infer<
+  typeof GenerateAutopsyScenarioOutputSchema
+>;
 
 export async function generateAutopsyScenario(
   input: GenerateAutopsyScenarioInput

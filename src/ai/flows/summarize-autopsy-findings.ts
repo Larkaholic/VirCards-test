@@ -15,14 +15,20 @@ const SummarizeAutopsyFindingsInputSchema = z.object({
   scenario: z.string().describe('The generated autopsy scenario.'),
   findings: z.string().describe('The user provided autopsy findings.'),
 });
-export type SummarizeAutopsyFindingsInput = z.infer<typeof SummarizeAutopsyFindingsInputSchema>;
+export type SummarizeAutopsyFindingsInput = z.infer<
+  typeof SummarizeAutopsyFindingsInputSchema
+>;
 
 const SummarizeAutopsyFindingsOutputSchema = z.object({
   summary: z.string().describe('A summary of the autopsy findings.'),
 });
-export type SummarizeAutopsyFindingsOutput = z.infer<typeof SummarizeAutopsyFindingsOutputSchema>;
+export type SummarizeAutopsyFindingsOutput = z.infer<
+  typeof SummarizeAutopsyFindingsOutputSchema
+>;
 
-export async function summarizeAutopsyFindings(input: SummarizeAutopsyFindingsInput): Promise<SummarizeAutopsyFindingsOutput> {
+export async function summarizeAutopsyFindings(
+  input: SummarizeAutopsyFindingsInput
+): Promise<SummarizeAutopsyFindingsOutput> {
   return summarizeAutopsyFindingsFlow(input);
 }
 
