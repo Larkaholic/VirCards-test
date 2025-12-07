@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { useAutopsyStore } from './autopsy-provider';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BrainCircuit, Dna, Hourglass, Loader2, Microscope, Stethoscope, Syringe, ZoomIn, FileText } from 'lucide-react';
+import { BrainCircuit, Dna, Hourglass, Loader2, Microscope, Stethoscope, ZoomIn, FileText } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '../ui/badge';
 import React from 'react';
 
 export default function AutopsyControls() {

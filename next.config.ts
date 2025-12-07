@@ -5,6 +5,10 @@ config();
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    // This is to allow requests from the Cloud Workstation development environment.
+    allowedDevOrigins: ["*.cloudworkstations.dev"],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
