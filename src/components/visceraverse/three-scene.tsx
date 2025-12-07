@@ -6,6 +6,7 @@ import { useAutopsyStore } from './autopsy-provider';
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
+import { cn } from '@/lib/utils';
 
 export default function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null);
