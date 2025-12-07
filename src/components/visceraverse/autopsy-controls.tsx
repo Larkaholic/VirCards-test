@@ -2,17 +2,15 @@
 
 import { createAutopsyScenario } from '@/app/actions';
 import { Button } from '@/components/ui/button';
-import { useAutopsy } from './autopsy-provider';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAutopsyStore } from './autopsy-provider';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BrainCircuit, Dna, Hourglass, Loader2, Microscope, Stethoscope, Syringe } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '../ui/separator';
 
 export default function AutopsyControls() {
-  const { scenario, setScenario, isLoading, setIsLoading, interactions, clearState } = useAutopsy();
+  const { scenario, setScenario, isLoading, setIsLoading, interactions, clearState } = useAutopsyStore();
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -20,7 +18,12 @@ export default function AutopsyControls() {
     clearState();
     const result = await createAutopsyScenario({});
     if (result.success && result.data) {
-      setScenario(result.data);
+      // Ensure evidence is an array
+      const scenarioData = {
+        ...result.data,
+        evidence: result.data.evidence || [],
+      };
+      setScenario(scenarioData);
     } else {
       toast({
         variant: 'destructive',

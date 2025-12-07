@@ -1,74 +1,81 @@
 'use client';
 
-import type { AutopsyScenario, OrganInteraction, DataTag } from '@/lib/types';
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { create } from 'zustand';
+import type { AutopsyScenario, OrganInteraction, DataTag, Evidence } from '@/lib/types';
 
-type AutopsyContextType = {
+type AutopsyState = {
   scenario: AutopsyScenario | null;
-  setScenario: (scenario: AutopsyScenario | null) => void;
   isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
   interactions: OrganInteraction[];
-  recordInteraction: (organName: string) => void;
   tags: DataTag[];
+  discoveredEvidence: string[];
+};
+
+type AutopsyActions = {
+  setScenario: (scenario: AutopsyScenario | null) => void;
+  setIsLoading: (loading: boolean) => void;
+  recordInteraction: (organName: string) => void;
   addTag: (tag: Omit<DataTag, 'id'>) => void;
   removeTag: (id: string) => void;
+  discoverEvidence: (evidenceId: string) => void;
   clearState: () => void;
 };
 
-const AutopsyContext = createContext<AutopsyContextType | undefined>(undefined);
+export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) => ({
+  // State
+  scenario: null,
+  isLoading: false,
+  interactions: [],
+  tags: [],
+  discoveredEvidence: [],
 
-export function AutopsyProvider({ children }: { children: ReactNode }) {
-  const [scenario, setScenario] = useState<AutopsyScenario | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [interactions, setInteractions] = useState<OrganInteraction[]>([]);
-  const [tags, setTags] = useState<DataTag[]>([]);
-
-  const recordInteraction = (organName: string) => {
-    setInteractions(prev => {
-      const existing = prev.find(i => i.name === organName);
+  // Actions
+  setScenario: (scenario) => set({ scenario }),
+  setIsLoading: (isLoading) => set({ isLoading }),
+  recordInteraction: (organName) => {
+    set(state => {
+      const existing = state.interactions.find(i => i.name === organName);
       if (existing) {
-        return prev.map(i => i.name === organName ? { ...i, count: i.count + 1 } : i);
+        return {
+          interactions: state.interactions.map(i =>
+            i.name === organName ? { ...i, count: i.count + 1 } : i
+          ),
+        };
       }
-      return [...prev, { name: organName, count: 1 }];
+      return { interactions: [...state.interactions, { name: organName, count: 1 }] };
     });
-  };
-  
-  const addTag = (tag: Omit<DataTag, 'id'>) => {
+  },
+  addTag: (tag) => {
     const newTag = { ...tag, id: `tag-${Date.now()}` };
-    setTags(prev => [...prev, newTag]);
-  };
-  
-  const removeTag = (id: string) => {
-    setTags(prev => prev.filter(t => t.id !== id));
-  };
-  
-  const clearState = () => {
-    setScenario(null);
-    setInteractions([]);
-    setTags([]);
-  }
+    set(state => ({ tags: [...state.tags, newTag] }));
+  },
+  removeTag: (id) => {
+    set(state => ({ tags: state.tags.filter(t => t.id !== id) }));
+  },
+  discoverEvidence: (evidenceId) => {
+    if (!get().discoveredEvidence.includes(evidenceId)) {
+        set(state => ({ discoveredEvidence: [...state.discoveredEvidence, evidenceId] }));
+    }
+  },
+  clearState: () => {
+    set({
+      scenario: null,
+      interactions: [],
+      tags: [],
+      discoveredEvidence: [],
+    });
+  },
+}));
 
-  const value = {
-    scenario,
-    setScenario,
-    isLoading,
-    setIsLoading,
-    interactions,
-    recordInteraction,
-    tags,
-    addTag,
-    removeTag,
-    clearState,
-  };
-
-  return <AutopsyContext.Provider value={value}>{children}</AutopsyContext.Provider>;
+// This component is kept for easy refactoring of consumers.
+// They can still use useAutopsy() as before.
+export function useAutopsy() {
+    return useAutopsyStore();
 }
 
-export function useAutopsy() {
-  const context = useContext(AutopsyContext);
-  if (context === undefined) {
-    throw new Error('useAutopsy must be used within an AutopsyProvider');
-  }
-  return context;
+// The provider is no longer strictly necessary if all components use the hook,
+// but it's good practice to keep it to signify that this part of the tree
+// uses the autopsy store.
+export function AutopsyProvider({ children }: { children: React.ReactNode }) {
+    return <>{children}</>;
 }

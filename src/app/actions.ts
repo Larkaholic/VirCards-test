@@ -12,7 +12,11 @@ type ActionResult = {
 export async function createAutopsyScenario(input: GenerateAutopsyScenarioInput): Promise<ActionResult> {
   try {
     const result = await generateAutopsyScenario(input);
-    return { success: true, data: result };
+    const scenario: AutopsyScenario = {
+        ...result,
+        evidence: [], // Initially no evidence is tied to the scenario
+    }
+    return { success: true, data: scenario };
   } catch (error) {
     console.error('Error generating autopsy scenario:', error);
     return { success: false, error: 'Failed to generate a new scenario. Please try again.' };

@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { useAutopsy } from './autopsy-provider';
+import { useAutopsyStore } from './autopsy-provider';
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
+import { DecalGeometry } from 'three/examples/jsm/objects/DecalGeometry.js';
+
 
 export default function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null);
-  const { recordInteraction, tags, addTag, removeTag, scenario } = useAutopsy();
+  const { recordInteraction, tags, addTag, removeTag, scenario } = useAutopsyStore();
   const [rendererSize, setRendererSize] = useState({ width: 0, height: 0 });
   const [mainCamera, setMainCamera] = useState<THREE.PerspectiveCamera | null>(null);
 
