@@ -214,7 +214,7 @@ export default function ThreeScene() {
           }
         });
     };
-  }, [scenario]); // Re-run effect if scenario changes
+  }, [scenario, injuries]); // Re-run effect if scenario or injuries change
 
   const getTagPosition = (pos: THREE.Vector3) => {
       if (!mainCamera) return { x: 0, y: 0 };
