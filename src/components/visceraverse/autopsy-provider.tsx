@@ -38,7 +38,7 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
 
   // Actions
   setScenario: (scenario) => {
-    set({ 
+    set({
       scenario,
       injuries: scenario?.injuries || [],
       discoveredEvidence: [],
@@ -82,12 +82,6 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
     });
   },
 }));
-
-// This component is kept for easy refactoring of consumers.
-// They can still use useAutopsy() as before.
-export function useAutopsy() {
-    return useAutopsyStore();
-}
 
 // The provider is no longer strictly necessary if all components use the hook,
 // but it's good practice to keep it to signify that this part of the tree
