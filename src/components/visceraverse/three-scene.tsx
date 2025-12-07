@@ -10,6 +10,7 @@ export default function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null);
   const { recordInteraction, tags, addTag, removeTag, scenario } = useAutopsy();
   const [rendererSize, setRendererSize] = useState({ width: 0, height: 0 });
+  const [mainCamera, setMainCamera] = useState<THREE.PerspectiveCamera | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -22,6 +23,7 @@ export default function ThreeScene() {
 
     const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.1, 1000);
     camera.position.z = 20;
+    setMainCamera(camera);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
@@ -196,10 +198,8 @@ export default function ThreeScene() {
     };
   }, [scenario]); // Re-run effect if scenario changes
 
-  const getTagPosition = (pos: THREE.Vector3) => {
+  const getTagPosition = (pos: THREE.Vector3, camera: THREE.Camera) => {
       const tempVec = pos.clone();
-      const camera = new THREE.PerspectiveCamera(75, rendererSize.width / rendererSize.height, 0.1, 1000);
-      camera.position.z = 20;
       tempVec.project(camera);
       const x = (tempVec.x * 0.5 + 0.5) * rendererSize.width;
       const y = (tempVec.y * -0.5 + 0.5) * rendererSize.height;
@@ -208,8 +208,8 @@ export default function ThreeScene() {
 
   return (
     <div className="w-full h-full relative" ref={mountRef}>
-       {tags.map(tag => {
-           const {x, y} = getTagPosition(tag.position);
+       {mainCamera && tags.map(tag => {
+           const {x, y} = getTagPosition(tag.position, mainCamera);
            return (
                 <div key={tag.id} className="absolute bg-card text-card-foreground rounded-lg px-2 py-1 text-xs shadow-lg flex items-center gap-1" style={{ transform: `translate(-50%, -50%)`, left: `${x}px`, top: `${y}px` }}>
                     {tag.text}
