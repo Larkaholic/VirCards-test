@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import type { AutopsyScenario, OrganInteraction, DataTag, Evidence } from '@/lib/types';
+import type { AutopsyScenario, OrganInteraction, DataTag, Evidence, Injury } from '@/lib/types';
 
 type AutopsyState = {
   scenario: AutopsyScenario | null;
@@ -9,6 +9,7 @@ type AutopsyState = {
   interactions: OrganInteraction[];
   tags: DataTag[];
   discoveredEvidence: string[];
+  injuries: Injury[];
 };
 
 type AutopsyActions = {
@@ -28,9 +29,15 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
   interactions: [],
   tags: [],
   discoveredEvidence: [],
+  injuries: [],
 
   // Actions
-  setScenario: (scenario) => set({ scenario }),
+  setScenario: (scenario) => {
+    set({ 
+      scenario,
+      injuries: scenario?.injuries || [],
+    });
+  },
   setIsLoading: (isLoading) => set({ isLoading }),
   recordInteraction: (organName) => {
     set(state => {
@@ -63,6 +70,7 @@ export const useAutopsyStore = create<AutopsyState & AutopsyActions>((set, get) 
       interactions: [],
       tags: [],
       discoveredEvidence: [],
+      injuries: [],
     });
   },
 }));

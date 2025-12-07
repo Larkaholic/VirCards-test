@@ -5,12 +5,12 @@ import * as THREE from 'three';
 import { useAutopsyStore } from './autopsy-provider';
 import { X } from 'lucide-react';
 import { Button } from '../ui/button';
-import { DecalGeometry } from 'three/examples/jsm/objects/DecalGeometry.js';
+import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
 
 
 export default function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null);
-  const { recordInteraction, tags, addTag, removeTag, scenario } = useAutopsyStore();
+  const { recordInteraction, tags, addTag, removeTag, scenario, injuries } = useAutopsyStore();
   const [rendererSize, setRendererSize] = useState({ width: 0, height: 0 });
   const [mainCamera, setMainCamera] = useState<THREE.PerspectiveCamera | null>(null);
 
@@ -76,6 +76,32 @@ export default function ThreeScene() {
     const interactiveObjects = [heart, leftLung, rightLung, liver, stomach, intestines];
     interactiveObjects.forEach(obj => scene.add(obj));
 
+    // Injury visualization
+    const decalMaterial = new THREE.MeshStandardMaterial({
+        color: 0x400000,
+        depthTest: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -4,
+        wireframe: false,
+        transparent: true,
+        opacity: 0.8
+    });
+
+    injuries.forEach(injury => {
+        const targetOrgan = interactiveObjects.find(o => o.userData.name === injury.location);
+        if (targetOrgan) {
+            const position = new THREE.Vector3(...injury.position);
+            const orientation = new THREE.Euler(...injury.orientation);
+            const size = new THREE.Vector3(...injury.size);
+            
+            const decalGeom = new DecalGeometry(targetOrgan as THREE.Mesh, position, orientation, size);
+            const decalMesh = new THREE.Mesh(decalGeom, decalMaterial);
+            scene.add(decalMesh);
+        }
+    });
+
+
     // Interaction
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -138,16 +164,6 @@ export default function ThreeScene() {
             addTag({text: obj.userData.name, position});
         }
     };
-    
-    // Add highlights from scenario
-    if (scenario) {
-      const injuryText = scenario.injuriesSustained.toLowerCase();
-      interactiveObjects.forEach(obj => {
-        if(injuryText.includes(obj.userData.name.toLowerCase().replace(' ', ''))) {
-          (obj as THREE.Mesh).material.emissive.set('yellow');
-        }
-      });
-    }
 
     renderer.domElement.addEventListener('pointermove', onPointerMove);
     renderer.domElement.addEventListener('pointerdown', onPointerDown);
@@ -200,9 +216,10 @@ export default function ThreeScene() {
     };
   }, [scenario]); // Re-run effect if scenario changes
 
-  const getTagPosition = (pos: THREE.Vector3, camera: THREE.Camera) => {
+  const getTagPosition = (pos: THREE.Vector3) => {
+      if (!mainCamera) return { x: 0, y: 0 };
       const tempVec = pos.clone();
-      tempVec.project(camera);
+      tempVec.project(mainCamera);
       const x = (tempVec.x * 0.5 + 0.5) * rendererSize.width;
       const y = (tempVec.y * -0.5 + 0.5) * rendererSize.height;
       return { x, y };
@@ -211,7 +228,7 @@ export default function ThreeScene() {
   return (
     <div className="w-full h-full relative" ref={mountRef}>
        {mainCamera && tags.map(tag => {
-           const {x, y} = getTagPosition(tag.position, mainCamera);
+           const {x, y} = getTagPosition(tag.position);
            return (
                 <div key={tag.id} className="absolute bg-card text-card-foreground rounded-lg px-2 py-1 text-xs shadow-lg flex items-center gap-1" style={{ transform: `translate(-50%, -50%)`, left: `${x}px`, top: `${y}px` }}>
                     {tag.text}
