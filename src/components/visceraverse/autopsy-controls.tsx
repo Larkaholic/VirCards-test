@@ -9,15 +9,16 @@ import { BrainCircuit, Dna, Hourglass, Loader2, Microscope, Stethoscope, Syringe
 import { ScrollArea } from '../ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '../ui/badge';
+import React from 'react';
 
 export default function AutopsyControls() {
   const { scenario, setScenario, isLoading, setIsLoading, interactions, clearState, activeTool, setActiveTool, discoveredEvidence } = useAutopsyStore();
   const { toast } = useToast();
 
-  const handleGenerate = async () => {
+  const handleLoadScenario = React.useCallback(async () => {
     setIsLoading(true);
     clearState();
-    const result = await createAutopsyScenario({});
+    const result = await createAutopsyScenario();
     if (result.success && result.data) {
       const scenarioData = {
         ...result.data,
@@ -32,7 +33,11 @@ export default function AutopsyControls() {
       });
     }
     setIsLoading(false);
-  };
+  }, [setIsLoading, clearState, setScenario, toast]);
+
+  React.useEffect(() => {
+    handleLoadScenario();
+  }, [handleLoadScenario]);
 
   const tools = [
     { name: 'magnifying-glass', icon: ZoomIn, label: 'Magnifying Glass' }
@@ -41,28 +46,18 @@ export default function AutopsyControls() {
   return (
     <ScrollArea className="h-full">
       <div className="p-4 space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center gap-2">
-              <Syringe /> New Case
-            </CardTitle>
-            <CardDescription>Generate a new autopsy scenario to begin.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                'Generate New Scenario'
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+        {isLoading && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading Case...</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        {scenario && (
+        {scenario && !isLoading && (
           <>
             <Card>
               <CardHeader>

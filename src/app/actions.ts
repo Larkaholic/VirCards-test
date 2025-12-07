@@ -1,9 +1,6 @@
 'use server';
 
-import {
-  generateAutopsyScenario,
-  type GenerateAutopsyScenarioInput,
-} from '@/ai/flows/generate-autopsy-scenario';
+import {predefinedScenario} from '@/lib/predefined-scenario';
 import type {AutopsyScenario} from '@/lib/types';
 
 type ActionResult = {
@@ -12,19 +9,17 @@ type ActionResult = {
   error?: string;
 };
 
-export async function createAutopsyScenario(
-  input: GenerateAutopsyScenarioInput
-): Promise<ActionResult> {
+export async function createAutopsyScenario(): Promise<ActionResult> {
   try {
-    const result = await generateAutopsyScenario(input);
-    return {success: true, data: result};
+    // Return the predefined scenario instead of generating a new one
+    return {success: true, data: predefinedScenario};
   } catch (error) {
-    console.error('Error generating autopsy scenario:', error);
+    console.error('Error loading predefined scenario:', error);
     const errorMessage =
       error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
       success: false,
-      error: `Failed to generate a new scenario. Please try again. Details: ${errorMessage}`,
+      error: `Failed to load the scenario. Please try again. Details: ${errorMessage}`,
     };
   }
 }

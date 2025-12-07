@@ -1,7 +1,10 @@
-import type { GenerateAutopsyScenarioOutput } from '@/ai/flows/generate-autopsy-scenario';
-
-export type AutopsyScenario = GenerateAutopsyScenarioOutput & {
-    evidence: Evidence[];
+export type AutopsyScenario = {
+  scenario: string;
+  causeOfDeath: string;
+  timeOfDeath: string;
+  injuriesSustained: string;
+  injuries: Injury[];
+  evidence: Evidence[];
 };
 
 export type OrganInteraction = {
@@ -16,19 +19,24 @@ export type DataTag = {
 };
 
 export type Evidence = {
-    id: string;
-    description: string;
-    type: 'visual' | 'toxicology' | 'document';
-    discovered: boolean;
-    data: Record<string, any>;
+  id: string;
+  description: string;
+  type: 'visual' | 'toxicology' | 'document';
+  discovered: boolean;
+  data: Record<string, any>;
 };
-  
-export type CauseOfDeath = 'stabbing' | 'gunshot' | 'poisoning' | 'blunt-force-trauma' | 'unknown';
-  
+
+export type CauseOfDeath =
+  | 'stabbing'
+  | 'gunshot'
+  | 'poisoning'
+  | 'blunt-force-trauma'
+  | 'unknown';
+
 export type Injury = {
-    type: CauseOfDeath;
-    location: string; // e.g., 'Heart', 'Left Lung'
-    position: [number, number, number];
-    orientation: [number, number, number];
-    size: [number, number, number];
+  type: CauseOfDeath;
+  location: string; // e.g., 'Heart', 'Left Lung'
+  position: [number, number, number];
+  orientation: [number, number, number];
+  size: [number, number, number];
 };
