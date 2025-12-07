@@ -1,38 +1,17 @@
-import { AutopsyProvider } from '@/components/visceraverse/autopsy-provider';
 import AutopsyControls from '@/components/visceraverse/autopsy-controls';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import VisceraverseLayout from '@/components/visceraverse/layout';
 import VisceraverseViewer from '@/components/visceraverse/visceraverse-viewer';
-import { PanelLeft } from 'lucide-react';
-import { Logo } from '@/components/icons/logo';
+import { AutopsyProvider } from '@/components/visceraverse/autopsy-provider';
 
 export default function Home() {
   return (
     <AutopsyProvider>
-      <div className="relative h-screen w-screen bg-background">
-        <header className="absolute top-0 left-0 z-10 p-4 flex items-center gap-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <PanelLeft />
-                <span className="sr-only">Toggle Controls</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-[350px] sm:w-[400px]">
-              <div className="flex h-full flex-col">
-                <SheetHeader className="flex-row items-center gap-3 p-4 border-b">
-                  <Logo />
-                  <SheetTitle className="text-xl font-headline font-bold">VisceraVerse</SheetTitle>
-                </SheetHeader>
-                <AutopsyControls />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </header>
+      <VisceraverseLayout>
+        <AutopsyControls />
         <main className="h-full w-full">
           <VisceraverseViewer />
         </main>
-      </div>
+      </VisceraverseLayout>
     </AutopsyProvider>
   );
 }

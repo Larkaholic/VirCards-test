@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BrainCircuit, Dna, Hourglass, Loader2, Microscope, Stethoscope, Syringe, ZoomIn, FileText } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 
 export default function AutopsyControls() {
