@@ -173,9 +173,6 @@ export default function ThreeScene() {
     // Animation loop
     const animate = () => {
         requestAnimationFrame(animate);
-        interactiveObjects.forEach(obj => {
-            obj.rotation.y += 0.001;
-        });
         renderer.render(scene, camera);
     };
     animate();
